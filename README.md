@@ -13,7 +13,7 @@ spl_autoload_extensions(".php");
 spl_autoload_register();
 use jlls\Hue as Hue;
 $myLights = new Hue\System("192.168.1.2", "newdeveloper");
-print_r(json_decode($myLights->Lights()->DescribeAllLights()), true);
+print_r(json_decode($myLights->Lights()->DescribeAllLights(), true));
 ```
 
 - Methods are chainable:
