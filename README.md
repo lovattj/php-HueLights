@@ -19,14 +19,14 @@ print_r(json_decode($myLights->Lights()->DescribeAllLights(), true));
 - Methods are chainable:
 ```
 $lightId=1;
-$operation = $myLights->Lights()->LightOn($lightId)->LightBrightness($lightId, 100)->LightHue($lightId, 20000);
+$operation = $myLights->Lights($lightId)->LightOn()->LightBrightness(100)->LightHue(20000);
 ```
 
 - Randomise your light colour every few seconds with the power of automation!:
 ```
 $lightId=1;
 for ($i=1, $i<100; $i++) {
-  $operation = $myLights->Lights()->LightOn($lightId)->LightBrightness($lightId, 'random')->LightHue($lightId, 'random');
+  $operation = $myLights->Lights($lightId)->LightOn()->LightBrightness('random')->LightHue('random');
   sleep(5);
 }
 ```
