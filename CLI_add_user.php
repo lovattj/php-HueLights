@@ -1,10 +1,5 @@
 #!/usr/bin/php
 <?php
-$cliopts = getopt("l:");
-if (@!array_key_exists('l', $cliopts)) {
-	echo "You need to pass a light ID. Exiting.\n";
-	exit(1);
-}
 
 $opts = json_decode(file_get_contents("config.json"), true);
 spl_autoload_extensions(".php");
@@ -15,10 +10,14 @@ use jlls\Hue as Hue;
 $myLights = new Hue\System($opts['ip_address'], $opts['username']);
 
 try {
-	$response = json_decode($myLights->Lights($cliopts['l'])->LightOn()->LightBrightness("random")->LightHue("random"), true);
+	$response = json_decode($myLights->Info()->AddUser());
 	print_r($response);
 } catch (Exception $e) {
-	echo $e->getMessage();
+	if ($e->getMessage() == "Error - link button not pressed") {
+		echo $e->getMessage()." - press it and try again.";
+	} else {
+		echo $e->getMessage();
+	}
 }
 echo "\n";
 ?>

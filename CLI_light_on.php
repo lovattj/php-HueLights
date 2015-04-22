@@ -16,7 +16,7 @@ $myLights = new Hue\System($opts['ip_address'], $opts['username']);
 
 try {
 	
-	$response = json_decode($myLights->Lights()->LightOn($cliopts['l']), true);
+	$response = json_decode($myLights->Lights($cliopts['l'])->LightOn(), true);
 	printf("Light %d was turned %s.\n", $response['light'], $response['status']);
 } catch (Exception $e) {
 	echo $e->getMessage();

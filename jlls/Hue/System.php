@@ -1,11 +1,14 @@
 <?php
 namespace jlls\Hue {
+date_default_timezone_set("Europe/London");
+
 	class System {
 	
 	private $ip_address;
 	private $username;
 	private $api_root;
 	private $last_response;
+	private $light;
 	
 		public function __construct($incoming_ip_address, $incoming_username) {
 			$this->ip_address = $incoming_ip_address;
@@ -18,23 +21,19 @@ namespace jlls\Hue {
 		}
 
 			
-		public function Lights() {
-			return $this;
-		}
-					
-			public function CountLights() {
-				try {
-					$response = $this->Lights()->DescribeAllLights();
-					$this->last_response = Array('lightCount' => count($this->last_response));
-					return $this;
-				} catch (Exception $e) {
-					throw $e;
-				}
+		public function Lights($light) {
+			if (!empty($light) && is_numeric($light)) {
+				$this->light = $light;
+				return $this;
+			} else {
+				throw new HueException("Invalid light ID passed.");
+				exit;
 			}
-		
-			public function DescribeAllLights() {
+		}
+	
+			public function Describe() {
 				try {
-					$response = $this->make_get_request($this->api_root.$this->username."/lights");
+					$response = $this->make_get_request($this->api_root.$this->username."/lights/".$this->light);
 					$this->last_response = $response;
 					return $this;
 				} catch (Exception $e) {
@@ -42,21 +41,12 @@ namespace jlls\Hue {
 				}
 			}
 			
-			public function DescribeLight($light) {
-				try {
-					$response = $this->make_get_request($this->api_root.$this->username."/lights/".$light);
-					return $response;
-				} catch (Exception $e) {
-					throw $e;
-				}
-			}
-			
-			public function LightOn($light) {
+			public function LightOn() {
 				try {
 					$opts = Array();
 					$opts['on']=true;
-					$response = $this->Lights()->ModifyLight($light, $opts);
-					$this->last_response = Array("light" => $light, "status" => "on");
+					$response = $this->ModifyLight($this->light, $opts);
+					$this->last_response = Array("light" => $this->light, "status" => "on");
 					return $this;
 					
 				} catch (Exception $e) {
@@ -64,19 +54,19 @@ namespace jlls\Hue {
 				}
 			}
 
-			public function LightOff($light) {
+			public function LightOff() {
 				try {
 					$opts = Array();
 					$opts['on']=false;
-					$response = $this->Lights()->ModifyLight($light, $opts);
-					$this->last_response = Array("light" => $light, "status" => "off");
+					$response = $this->ModifyLight($this->light, $opts);
+					$this->last_response = Array("light" => $this->light, "status" => "off");
 					return $this;
 				} catch (Exception $e) {
 					throw $e;
 				}
 			}
 			
-			public function LightBrightness($light, $brightness) {
+			public function LightBrightness($brightness) {
 				if ($brightness == "random") {
 					$brightness = mt_rand(1, 254);
 				}
@@ -89,7 +79,7 @@ namespace jlls\Hue {
 				try {
 					$opts = Array();
 					(int)$opts['bri'] = $brightness;
-					$response = $this->Lights()->ModifyLight($light, $opts);
+					$response = $this->ModifyLight($this->light, $opts);
 					$this->last_response = $response;
 					return $this;
 				} catch (Exception $e) {
@@ -98,7 +88,7 @@ namespace jlls\Hue {
 				
 			}
 			
-			public function LightHue($light, $hue) {
+			public function LightHue($hue) {
 				if ($hue == "random") {
 					$hue = mt_rand(0, 65535);
 				}
@@ -111,7 +101,7 @@ namespace jlls\Hue {
 				try {
 					$opts = Array();
 					(int)$opts['hue'] = $hue;
-					$response = $this->Lights()->ModifyLight($light, $opts);
+					$response = $this->ModifyLight($this->light, $opts);
 					$this->last_response = $response;
 					return $this;
 				} catch (Exception $e) {
@@ -119,6 +109,26 @@ namespace jlls\Hue {
 				}			
 			}			
 
+			public function LightSaturation($sat) {
+				if ($sat == "random") {
+					$sat = mt_rand(0, 254);
+				}
+				
+				if ($sat < 0 || $sat > 254) {
+					throw new HueException("Specified saturation outside range of 0-254");
+					exit;
+				}
+				
+				try {
+					$opts = Array();
+					(int)$opts['sat'] = $sat;
+					$response = $this->ModifyLight($this->light, $opts);
+					$this->last_response = $response;
+					return $this;
+				} catch (Exception $e) {
+					throw $e;
+				}			
+			}	
 			
 			protected function ModifyLight($light, $opts) {
 				try {
@@ -135,23 +145,48 @@ namespace jlls\Hue {
 			
 		}
 		
-			public function DescribeIP() {
-				return $this->ip_address;
+			public function AddUser() {
+				try {
+					$opts = Array();
+					(string)$opts['devicetype'] = "phpHueLights";
+					(string)$opts['username'] = md5(time());
+					$response = $this->make_post_request($this->api_root, $opts);
+					$this->last_response = $response;
+					return $this;
+				} catch (Exception $e) {
+					throw $e;
+				}	
 			}
-		
-			public function DescribeUser() {
-				return $this->username;			
-			}
-		
+			
 			public function DescribeConfiguration() {
 				try {
-					$response = $this->make_get_request($this->api_root."config");
+					$response = $this->make_get_request($this->api_root.$this->username."/config");
 					return $response;
 				} catch (Exception $e) {
 					throw $e;
 				}
-			
-			}			
+			}
+		
+			public function DescribeAllLights() {
+				try {
+					$response = $this->make_get_request($this->api_root.$this->username."/lights");
+					$this->last_response = $response;
+					return $this;
+				} catch (Exception $e) {
+					throw $e;
+				}
+			}	
+					
+			public function CountLights() {
+				try {
+					$response = $this->Lights()->DescribeAllLights();
+					$this->last_response = Array('lightCount' => count($this->last_response));
+					return $this;
+				} catch (Exception $e) {
+					throw $e;
+				}
+			}					
+						
 		
 		protected function make_get_request($where) {
 			$req = file_get_contents($where);
@@ -187,6 +222,29 @@ namespace jlls\Hue {
 			}
 			
 		}
+		
+		protected function make_post_request($where, $data) {
+			$postdata = json_encode($data);
+			$opts = array('http' =>
+				array(
+					'method'  => 'POST',
+					'header'  => 'Content-type: application/x-www-form-urlencoded',
+					'content' => $postdata
+				)
+			);
+			
+			$context = stream_context_create($opts);
+			$req = file_get_contents($where, false, $context);
+			$decoded = json_decode($req, true);
+			
+			if (@array_key_exists('error', @$decoded[0])) {
+				throw new HueException('Error - '.@$decoded[0]['error']['description']);
+				exit;
+			} else {
+				return $decoded;
+			}
+			
+		}		
 
 	}
 	

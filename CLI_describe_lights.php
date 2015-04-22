@@ -10,7 +10,7 @@ $myLights = new Hue\System($opts['ip_address'], $opts['username']);
 
 try {
 	
-	$response = json_decode($myLights->Lights()->DescribeAllLights(), true);
+	$response = json_decode($myLights->Info()->DescribeAllLights(), true);
 	
 	echo "ID | Reachable | Status | Hue    | Brightness | Name \n";
 	foreach ($response as $key=>$light) {
