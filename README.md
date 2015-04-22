@@ -7,6 +7,10 @@ Require or autoload the `jlls/Hue/System.php` file.<br>
 Create new object of the `jlls/Hue/System method`, passing your base station IP and developer ID in constructor.<br>
 Call a method!
 
+- Get a Developer ID:<br>
+Press the button on the top of your Hue base station, then run the `CLI_add_user.php` script.<br>
+This will return a randomised developer ID you can plug into `config.json` for use with subsequent requests.
+
 - Example:
 ```
 spl_autoload_extensions(".php");
