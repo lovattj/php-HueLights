@@ -7,6 +7,10 @@ Require or autoload the `jlls/Hue/System.php` file.<br>
 Create new object of the `jlls/Hue/System method`, passing your base station IP and developer ID in constructor.<br>
 Call a method!
 
+- Get a Developer ID:<br>
+Press the button on the top of your Hue base station, then run the `CLI_add_user.php` script.<br>
+This will return a randomised developer ID you can plug into `config.json` for use with subsequent requests.
+
 - Example:
 ```
 spl_autoload_extensions(".php");
@@ -19,14 +23,14 @@ print_r(json_decode($myLights->Lights()->DescribeAllLights(), true));
 - Methods are chainable:
 ```
 $lightId=1;
-$operation = $myLights->Lights()->LightOn($lightId)->LightBrightness($lightId, 100)->LightHue($lightId, 20000);
+$operation = $myLights->Lights($lightId)->LightOn()->LightBrightness(100)->LightHue(20000);
 ```
 
 - Randomise your light colour every few seconds with the power of automation!:
 ```
 $lightId=1;
 for ($i=1, $i<100; $i++) {
-  $operation = $myLights->Lights()->LightOn($lightId)->LightBrightness($lightId, 'random')->LightHue($lightId, 'random');
+  $operation = $myLights->Lights($lightId)->LightOn()->LightBrightness('random')->LightHue('random');
   sleep(5);
 }
 ```
