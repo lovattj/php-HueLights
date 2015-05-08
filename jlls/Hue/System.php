@@ -9,6 +9,7 @@ date_default_timezone_set("Europe/London");
 	private $api_root;
 	private $last_response;
 	private $light;
+	private $group;
 	
 		public function __construct($incoming_ip_address, $incoming_username) {
 			$this->ip_address = $incoming_ip_address;
@@ -139,6 +140,68 @@ date_default_timezone_set("Europe/London");
 				}
 				
 			}
+
+		public function Groups($groupid) {
+			$this->group = $groupid;
+			return $this;
+		}
+		
+			public function DescribeGroup() {
+				try {
+					
+					$response = $this->make_get_request($this->api_root.$this->username."/groups/".$this->group);
+					$this->last_response = $response;
+					return $this;				
+				} catch (Exception $e) {
+					throw $e;
+				}
+			
+			}
+			
+			public function GroupOn() {
+				try {
+					$opts = Array();
+					$opts['on'] = true;
+					$response = $this->ModifyGroup($this->group, $opts);
+					if (array_key_exists('success', $response[0])) {
+						$this->last_response = Array("group" => $this->group, "status" => "on");
+					} else {
+						throw new HueException('Unexpected response from the base station.');
+					}
+					
+					return $this;
+				} catch (Exception $e) {
+					throw $e;
+				}
+			}
+			
+			public function GroupOff() {
+				try {
+					$opts = Array();
+					$opts['on'] = false;
+					$response = $this->ModifyGroup($this->group, $opts);
+					if (array_key_exists('success', $response[0])) {
+						$this->last_response = Array("group" => $this->group, "status" => "off");
+					} else {
+						throw new HueException('Unexpected response from the base station.');
+					}
+
+					return $this;
+				} catch (Exception $e) {
+					throw $e;
+				}
+			}
+					
+			protected function ModifyGroup($group, $opts) {
+				try {
+					$response = $this->make_put_request($this->api_root.$this->username."/groups/".$group."/action", $opts);
+					return $response;
+				} catch (Exception $e) {
+					throw $e;
+				}
+			}
+			
+			
 
 		public function Info() {
 			return $this;
